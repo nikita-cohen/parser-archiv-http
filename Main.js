@@ -40,12 +40,17 @@ function resetAtMidnight() {
     let msToMidnight = night.getTime() - now.getTime();
 
     setTimeout(function() {
-        runWorker().then();           //      <-- This is the function being called at midnight.
+        data.forEach(obj => {
+            runWorker(obj).then(data => {
+                if (data) {
+                    console.log(data)
+                }
+            })
+        })           //      <-- This is the function being called at midnight.
         resetAtMidnight();    //      Then, reset again next midnight.
     }, msToMidnight);
 }
 
-runWorker().then();
 resetAtMidnight();
 
 
