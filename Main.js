@@ -20,13 +20,7 @@ async function runWorker(obj) {
     })
 }
 
-data.forEach(obj => {
-    runWorker(obj).then(data => {
-        if (data) {
-            console.log(data)
-        }
-    })
-})
+
 
 function resetAtMidnight() {
     let now = new Date();
@@ -34,7 +28,7 @@ function resetAtMidnight() {
         now.getFullYear(),
         now.getMonth(),
         now.getDate() + 1, // the next day, ...
-        5, 0, 0 // ...at 00:00:00 hours
+        6, 0, 0 // ...at 00:00:00 hours
     );
 
     let msToMidnight = night.getTime() - now.getTime();
