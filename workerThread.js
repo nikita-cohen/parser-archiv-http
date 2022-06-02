@@ -39,7 +39,7 @@ async function parseData(url) {
             lastElement.forEach((manual, index) => {
 
                obj.url = "https://archive.org" + manual.href;
-               obj.title = manual.text;
+               obj.title = manual.text.replace(/[^\w ]/, '');
 
                axios.post("https://search.findmanual.guru/manual/search/insert/", obj)
                    .then(data => console.log("ok ", index))
