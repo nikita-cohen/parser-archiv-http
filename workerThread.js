@@ -40,6 +40,7 @@ async function parseData(url) {
 
                obj.url = "https://archive.org" + manual.href;
                obj.title = manual.text.replace(/[^\w ]/, '');
+               obj.id = manual.text.replace(/[^\w ]/, '' ).trim().replaceAll(' ', '_')
 
                axios.post("https://search.findmanual.guru/manual/search/insert/", obj)
                    .then(data => console.log("ok ", index))
