@@ -20,6 +20,14 @@ async function runWorker(obj) {
     })
 }
 
+data.forEach(obj => {
+    runWorker(obj).then(data => {
+        if (data) {
+            console.log(data)
+        }
+    })
+})
+
 function resetAtMidnight() {
     let now = new Date();
     let night = new Date(
