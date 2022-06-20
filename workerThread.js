@@ -2,6 +2,15 @@ const {workerData} = require("worker_threads");
 const axios = require('axios')
 const cheerio = require('cheerio');
 
+const manualSchema = require("./service/SearchService");
+
+const mongoose = require('mongoose');
+
+mongoose.connect('mongodb://localhost:27017/findManual-complete').then()
+    .catch(e => {
+       console.log(e)
+    })
+
 async function parseData(url) {
 
    const {data} = await axios.get(url);
@@ -16,41 +25,45 @@ async function parseData(url) {
    }
 
    for (let i = 0; i < firstHref.length; i++) {
-      let isResult = true;
-      let count = 1;
-      obj.brand = firstHref[i].text;
-      obj.category = firstHref[i].text;
-      while (isResult) {
-         const data2 = await axios.get("https://archive.org/" + firstHref[i].href + "?&sort=titleSorter&page=" + count.toString());
+      try {
+         let isResult = true;
+         let count = 1;
+         obj.brand = firstHref[i].text;
+         obj.category = firstHref[i].text;
+         while (isResult) {
+            const data2 = await axios.get("https://archive.org" + firstHref[i].href + "?&sort=titleSorter&page=" + count.toString());
 
-         const newSelector = cheerio.load(data2.data)
+            const newSelector = cheerio.load(data2.data)
 
-         const datato = newSelector(`div.C234 > div.item-ttl.C.C2`);
+            const datato = newSelector(`div.C234 > div.item-ttl.C.C2`);
 
-         const lastElement = [];
+            const lastElement = [];
 
-         for (let j =0; j < datato.length; j++) {
-            lastElement.push({href : newSelector(datato[j]).children("a").attr('href'), text : newSelector(datato[j]).children("a").attr('title')});
+            for (let j =0; j < datato.length; j++) {
+               lastElement.push({href : newSelector(datato[j]).children("a").attr('href'), text : newSelector(datato[j]).children("a").attr('title')});
+            }
+
+
+
+            if (lastElement.length > 0) {
+               lastElement.forEach((manual, index) => {
+
+                  obj.url = "https://archive.org" + manual.href;
+                  obj.title = manual.text.replace(/[^\w ]/, '');
+
+                  manualSchema.addManual(obj)
+                      .then(data => console.log("ok ", index))
+                      .catch((e) => console.log(e))
+               })
+               count++;
+            } else {
+               isResult = false;
+            }
          }
+      }catch (e) {
 
-
-
-         if (lastElement.length > 0) {
-            lastElement.forEach((manual, index) => {
-
-               obj.url = "https://archive.org" + manual.href;
-               obj.title = manual.text.replace(/[^\w ]/, '');
-               obj.id = manual.text.replace(/[^\w ]/, '' ).trim().replaceAll(' ', '_')
-
-               axios.post("https://search.findmanual.guru/manual/search/insert/", obj)
-                   .then(data => console.log("ok ", index))
-                   .catch((e) => console.log(e))
-            })
-            count++;
-         } else {
-            isResult = false;
-         }
       }
+
    }
 
 
